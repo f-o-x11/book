@@ -18,6 +18,7 @@ Examples:
 - [Vercel](#vercel)
 - [Spin (serverless WebAssembly)](#spin---serverless-webassembly)
 - [Netlify](#netlify)
+- [deed.page](#deedpage)
 
 ## Github Pages
 
@@ -577,3 +578,17 @@ targets = ["wasm32-unknown-unknown"]
 The `rust-toolchain.toml` ensures the correct Rust toolchain and WASM target are
 available during the build process. The redirect rule in `netlify.toml` ensures
 your SPA routes work correctly by serving `index.html` for all paths.
+
+## deed.page
+
+[deed.page](https://deed.page) hosts static files uploaded over HTTP, with no account and no Git connection. Pack the `dist/` folder into a tarball and upload it with a single `curl` request. The `spa=1` parameter makes deed.page serve `index.html` for any path that is not a file, so client-side routes still load when the page is refreshed:
+
+```bash
+trunk build --release
+tar -C dist -czf site.tar.gz .
+curl -T site.tar.gz "https://deed.page/v1/sites?slug=my-leptos-app&spa=1"
+```
+
+The slug becomes the subdomain (`https://my-leptos-app.deed.page/`) and must not already be taken. The first response includes an owner token, shown only once, which is the only way to update or delete the site later. To publish a new build to the same address, run the same `curl` command with `-H "Authorization: Bearer $DEEDPAGE_TOKEN"`.
+
+One upload request is limited to 4 MB. For a larger `dist/`, see the upload instructions in the [deed.page documentation](https://deed.page/docs).
